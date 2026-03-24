@@ -1,0 +1,139 @@
+.card {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  transition: all var(--transition-base);
+  cursor: pointer;
+  position: relative;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  border-color: var(--color-accent-dark);
+  box-shadow: var(--shadow-lg), 0 0 30px rgba(201, 169, 110, 0.08);
+}
+
+.image-wrapper {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: var(--color-bg-tertiary);
+}
+
+.image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.card:hover .image-wrapper img {
+  transform: scale(1.08);
+}
+
+.badge-container {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 2;
+}
+
+.quick-add {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--spacing-md);
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+  transform: translateY(100%);
+  transition: transform var(--transition-base);
+  z-index: 2;
+}
+
+.card:hover .quick-add {
+  transform: translateY(0);
+}
+
+.quick-add button {
+  width: 100%;
+  padding: 0.7rem;
+  background: var(--color-accent);
+  color: #0A0A0A;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.quick-add button:hover {
+  background: var(--color-accent-light);
+}
+
+.info {
+  padding: var(--spacing-md) var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+}
+
+.category {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--color-accent);
+  margin-bottom: 4px;
+}
+
+.name {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.price-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.price {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-text-primary);
+}
+
+.original-price {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.discount {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-error);
+}
+
+/* Placeholder para imagenes sin cargar */
+.placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-bg-tertiary), var(--color-bg-secondary));
+  color: var(--color-text-muted);
+  font-size: 3rem;
+}
