@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/product/ProductCard';
 import styles from './page.module.css';
@@ -30,6 +30,14 @@ const CATEGORIES = [
 ];
 
 export default function CatalogoPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p>Cargando catalogo...</p></div>}>
+      <CatalogoContent />
+    </Suspense>
+  );
+}
+
+function CatalogoContent() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('categoria') || 'todos';
 
