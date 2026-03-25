@@ -29,12 +29,35 @@ export default function CheckoutPage() {
     e.preventDefault();
     setLoading(true);
 
-    // Aqui se integrara MercadoPago cuando se configuren las credenciales
-    // Por ahora mostramos un mensaje de demostración
-    setTimeout(() => {
-      alert('Integracion con MercadoPago pendiente. Configura tus credenciales en .env.local para activar los pagos.');
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items,
+          customer: formData,
+          shippingCost,
+          total
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al procesar el pago');
+      }
+
+      // Redirigir a MercadoPago
+      if (data.init_point) {
+        window.location.href = data.init_point;
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('Hubo un error al iniciar el pago. Por favor intenta nuevamente.');
       setLoading(false);
-    }, 1500);
+    }
   }
 
   if (items.length === 0) {

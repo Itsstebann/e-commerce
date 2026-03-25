@@ -1,9 +1,6 @@
 import './globals.css';
 import { CartProvider } from '@/context/CartContext';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import WhatsAppButton from '@/components/layout/WhatsAppButton';
-import CartSidebar from '@/components/cart/CartSidebar';
+import ClientLayoutWrapper from '@/components/layout/ClientLayoutWrapper';
 
 export const metadata = {
   title: 'Aurumea | Fragancias exclusivas que definen tu esencia',
@@ -16,11 +13,9 @@ export default function RootLayout({ children }) {
     <html lang="es">
       <body>
         <CartProvider>
-          <Header />
-          <main>{children}</main>
-          <Footer />
-          <CartSidebar />
-          <WhatsAppButton />
+          <ClientLayoutWrapper>
+            {children}
+          </ClientLayoutWrapper>
         </CartProvider>
       </body>
     </html>

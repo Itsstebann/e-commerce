@@ -1,25 +1,10 @@
 'use client';
 
-import { useState, useMemo, Suspense } from 'react';
+import { useState, useMemo, Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/product/ProductCard';
+import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
-
-// Datos de demostración (se reemplazaran con Supabase)
-const ALL_PRODUCTS = [
-  { id: '1', nombre: 'Eau de Parfum Noir', precio: 1299, precio_oferta: 999, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: true, nuevo: true, stock: 15 },
-  { id: '2', nombre: 'Rose Absolue Intense', precio: 1599, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para Ella', slug: 'mujer', destacado: true, nuevo: false, stock: 8 },
-  { id: '3', nombre: 'Oud & Santal Premium', precio: 1899, precio_oferta: 1499, imagen_url: null, categoria_nombre: 'Unisex', slug: 'unisex', destacado: true, nuevo: true, stock: 5 },
-  { id: '4', nombre: 'Fresh Citrus Breeze', precio: 899, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: true, nuevo: false, stock: 20 },
-  { id: '5', nombre: 'Jasmine & Vanilla Dream', precio: 1199, precio_oferta: 899, imagen_url: null, categoria_nombre: 'Para Ella', slug: 'mujer', destacado: true, nuevo: false, stock: 12 },
-  { id: '6', nombre: 'Amber Wood Collection', precio: 2199, precio_oferta: null, imagen_url: null, categoria_nombre: 'Unisex', slug: 'unisex', destacado: true, nuevo: true, stock: 3 },
-  { id: '7', nombre: 'Ocean Mist Sport', precio: 799, precio_oferta: 599, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: true, nuevo: false, stock: 25 },
-  { id: '8', nombre: 'Peony & Blush Suede', precio: 1399, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para Ella', slug: 'mujer', destacado: true, nuevo: false, stock: 10 },
-  { id: '9', nombre: 'Vetiver & Tobacco', precio: 1699, precio_oferta: 1299, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: false, nuevo: false, stock: 7 },
-  { id: '10', nombre: 'Cherry Blossom Delight', precio: 999, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para Ella', slug: 'mujer', destacado: false, nuevo: true, stock: 18 },
-  { id: '11', nombre: 'Musk Noir Absolute', precio: 2499, precio_oferta: 1999, imagen_url: null, categoria_nombre: 'Unisex', slug: 'unisex', destacado: false, nuevo: false, stock: 4 },
-  { id: '12', nombre: 'Bergamot & Neroli', precio: 1099, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: false, nuevo: false, stock: 14 },
-];
 
 const CATEGORIES = [
   { id: 'todos', label: 'Todos' },
@@ -44,21 +29,68 @@ function CatalogoContent() {
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('relevancia');
+  
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('productos')
+          .select('*')
+          .order('creado_en', { ascending: false });
+        
+        if (error) throw error;
+        
+        // Use default fallback if no data
+        if (!data || data.length === 0) {
+          // Fallback static data if DB table has no rows or is missing
+          setProducts([
+            { id: '1', nombre: 'Eau de Parfum Noir', precio: 1299, precio_oferta: 999, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: true, nuevo: true, stock: 15 },
+            { id: '2', nombre: 'Rose Absolue Intense', precio: 1599, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para Ella', slug: 'mujer', destacado: true, nuevo: false, stock: 8 },
+            { id: '3', nombre: 'Oud & Santal Premium', precio: 1899, precio_oferta: 1499, imagen_url: null, categoria_nombre: 'Unisex', slug: 'unisex', destacado: true, nuevo: true, stock: 5 },
+            { id: '4', nombre: 'Fresh Citrus Breeze', precio: 899, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: true, nuevo: false, stock: 20 },
+          ]);
+        } else {
+          setProducts(data);
+        }
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        // Fallback en caso de error (tabla no existe, etc.)
+        setProducts([
+          { id: '1', nombre: 'Eau de Parfum Noir', precio: 1299, precio_oferta: 999, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: true, nuevo: true, stock: 15 },
+          { id: '2', nombre: 'Rose Absolue Intense', precio: 1599, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para Ella', slug: 'mujer', destacado: true, nuevo: false, stock: 8 },
+          { id: '3', nombre: 'Oud & Santal Premium', precio: 1899, precio_oferta: 1499, imagen_url: null, categoria_nombre: 'Unisex', slug: 'unisex', destacado: true, nuevo: true, stock: 5 },
+          { id: '4', nombre: 'Fresh Citrus Breeze', precio: 899, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: true, nuevo: false, stock: 20 },
+          { id: '5', nombre: 'Jasmine & Vanilla Dream', precio: 1199, precio_oferta: 899, imagen_url: null, categoria_nombre: 'Para Ella', slug: 'mujer', destacado: true, nuevo: false, stock: 12 },
+          { id: '6', nombre: 'Amber Wood Collection', precio: 2199, precio_oferta: null, imagen_url: null, categoria_nombre: 'Unisex', slug: 'unisex', destacado: true, nuevo: true, stock: 3 },
+          { id: '7', nombre: 'Ocean Mist Sport', precio: 799, precio_oferta: 599, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: true, nuevo: false, stock: 25 },
+          { id: '8', nombre: 'Peony & Blush Suede', precio: 1399, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para Ella', slug: 'mujer', destacado: true, nuevo: false, stock: 10 },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchProducts();
+  }, []);
 
   const filteredProducts = useMemo(() => {
-    let products = [...ALL_PRODUCTS];
+    let result = [...products];
 
     // Filtrar por categoria
     if (activeCategory === 'ofertas') {
-      products = products.filter(p => p.precio_oferta !== null);
+      result = result.filter(p => p.precio_oferta !== null);
     } else if (activeCategory !== 'todos') {
-      products = products.filter(p => p.slug === activeCategory);
+      result = result.filter(p => p.slug === activeCategory);
     }
 
     // Filtrar por busqueda
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      products = products.filter(p =>
+      result = result.filter(p =>
         p.nombre.toLowerCase().includes(query) ||
         p.categoria_nombre.toLowerCase().includes(query)
       );
@@ -67,21 +99,21 @@ function CatalogoContent() {
     // Ordenar
     switch (sortBy) {
       case 'precio-asc':
-        products.sort((a, b) => (a.precio_oferta || a.precio) - (b.precio_oferta || b.precio));
+        result.sort((a, b) => (a.precio_oferta || a.precio) - (b.precio_oferta || b.precio));
         break;
       case 'precio-desc':
-        products.sort((a, b) => (b.precio_oferta || b.precio) - (a.precio_oferta || a.precio));
+        result.sort((a, b) => (b.precio_oferta || b.precio) - (a.precio_oferta || a.precio));
         break;
       case 'nombre':
-        products.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        result.sort((a, b) => a.nombre.localeCompare(b.nombre));
         break;
       case 'nuevo':
-        products.sort((a, b) => (b.nuevo ? 1 : 0) - (a.nuevo ? 1 : 0));
+        result.sort((a, b) => (b.nuevo ? 1 : 0) - (a.nuevo ? 1 : 0));
         break;
     }
 
-    return products;
-  }, [activeCategory, searchQuery, sortBy]);
+    return result;
+  }, [activeCategory, searchQuery, sortBy, products]);
 
   return (
     <>
@@ -144,11 +176,15 @@ function CatalogoContent() {
 
         {/* Contador de resultados */}
         <p className={styles['results-count']}>
-          {filteredProducts.length} {filteredProducts.length === 1 ? 'producto' : 'productos'}
+          {loading ? 'Cargando productos...' : `${filteredProducts.length} ${filteredProducts.length === 1 ? 'producto' : 'productos'}`}
         </p>
 
         {/* Grid de productos */}
-        {filteredProducts.length > 0 ? (
+        {loading ? (
+           <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--color-text-secondary)' }}>
+             <span>Cargando nuestro catálogo de fragancias...</span>
+           </div>
+        ) : filteredProducts.length > 0 ? (
           <div className="product-grid">
             {filteredProducts.map(product => (
               <ProductCard key={product.id} product={product} />

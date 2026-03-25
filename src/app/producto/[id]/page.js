@@ -1,32 +1,87 @@
 'use client';
 
-import { useState, use } from 'react';
+import { useState, use, useEffect } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { formatPrice, calculateDiscount } from '@/utils/formatPrice';
 import ProductCard from '@/components/product/ProductCard';
+import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
 
-// Datos de demostración
+// Fallback products just in case DB is not populated
 const ALL_PRODUCTS = [
   { id: '1', nombre: 'Eau de Parfum Noir', descripcion: 'Una fragancia intensa y seductora con notas de madera oscura, cuero y especias orientales. Perfecta para las noches mas elegantes. Esta esencia captura la sofisticacion de la noche con un toque de misterio.', precio: 1299, precio_oferta: 999, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: true, nuevo: true, stock: 15 },
   { id: '2', nombre: 'Rose Absolue Intense', descripcion: 'Un bouquet de rosas de Bulgaria con un corazon de jazmin y fondo de almizcle. Femenina, elegante y duradera. La esencia perfecta para la mujer que busca dejar huella.', precio: 1599, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para Ella', slug: 'mujer', destacado: true, nuevo: false, stock: 8 },
   { id: '3', nombre: 'Oud & Santal Premium', descripcion: 'Madera de oud combinada con sandalo cremoso y un toque de vainilla. Una fragancia unisex que transmite lujo y calidez. Ideal para quienes buscan una presencia sofisticada.', precio: 1899, precio_oferta: 1499, imagen_url: null, categoria_nombre: 'Unisex', slug: 'unisex', destacado: true, nuevo: true, stock: 5 },
   { id: '4', nombre: 'Fresh Citrus Breeze', descripcion: 'Notas citricas de bergamota y limon con un corazon de hierba fresca y base de musgo blanco. Refrescante y energizante para el dia a dia.', precio: 899, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: true, nuevo: false, stock: 20 },
-  { id: '5', nombre: 'Jasmine & Vanilla Dream', descripcion: 'Jazmin nocturno con vainilla de Madagascar y un toque de tonka. Dulce, envolvente y adictiva. Una fragancia que invita al romance.', precio: 1199, precio_oferta: 899, imagen_url: null, categoria_nombre: 'Para Ella', slug: 'mujer', destacado: true, nuevo: false, stock: 12 },
-  { id: '6', nombre: 'Amber Wood Collection', descripcion: 'Ambar fosil con madera de cedro, incienso y pachuli. Una fragancia profunda y meditativa que evoluciona a lo largo del dia.', precio: 2199, precio_oferta: null, imagen_url: null, categoria_nombre: 'Unisex', slug: 'unisex', destacado: true, nuevo: true, stock: 3 },
-  { id: '7', nombre: 'Ocean Mist Sport', descripcion: 'Brisa marina con notas acuaticas, menta fresca y madera flotante. Una fragancia deportiva y fresca ideal para el hombre activo.', precio: 799, precio_oferta: 599, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: true, nuevo: false, stock: 25 },
-  { id: '8', nombre: 'Peony & Blush Suede', descripcion: 'Peonia en flor con gamuza delicada y un toque de manzana roja. Femenina y contemporanea, perfecta para cualquier ocasion.', precio: 1399, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para Ella', slug: 'mujer', destacado: true, nuevo: false, stock: 10 },
 ];
 
 export default function ProductoPage({ params }) {
   const resolvedParams = use(params);
   const productId = resolvedParams.id;
-  const product = ALL_PRODUCTS.find(p => p.id === productId);
+  
+  const [product, setProduct] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [showNotification, setShowNotification] = useState(false);
+
+  useEffect(() => {
+    async function loadProduct() {
+      try {
+        setLoading(true);
+        // Intentar obtener de Supabase
+        const { data: dbProduct, error } = await supabase
+          .from('productos')
+          .select('*')
+          .eq('id', productId)
+          .single();
+          
+        if (dbProduct) {
+          setProduct(dbProduct);
+          
+          // Fetch related
+          const { data: related } = await supabase
+            .from('productos')
+            .select('*')
+            .eq('categoria_nombre', dbProduct.categoria_nombre)
+            .neq('id', dbProduct.id)
+            .limit(4);
+            
+          if (related) setRelatedProducts(related);
+        } else {
+          // Fallback
+          const fallback = ALL_PRODUCTS.find(p => p.id === productId);
+          if (fallback) {
+            setProduct(fallback);
+            setRelatedProducts(ALL_PRODUCTS.filter(p => p.id !== fallback.id && p.categoria_nombre === fallback.categoria_nombre).slice(0, 4));
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching product:', err);
+        // Fallback en caso de error (e.g. invalid UUID format para Supabase vs ID manuales)
+        const fallback = ALL_PRODUCTS.find(p => String(p.id) === String(productId));
+        if (fallback) {
+          setProduct(fallback);
+          setRelatedProducts(ALL_PRODUCTS.filter(p => p.id !== fallback.id && p.categoria_nombre === fallback.categoria_nombre).slice(0, 4));
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    loadProduct();
+  }, [productId]);
+
+  if (loading) {
+    return (
+      <div className={styles['product-page']} style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: 'var(--color-text-secondary)' }}>Cargando producto...</p>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -46,7 +101,6 @@ export default function ProductoPage({ params }) {
 
   const hasDiscount = product.precio_oferta && product.precio_oferta < product.precio;
   const discount = hasDiscount ? calculateDiscount(product.precio, product.precio_oferta) : 0;
-  const relatedProducts = ALL_PRODUCTS.filter(p => p.id !== product.id && p.categoria_nombre === product.categoria_nombre).slice(0, 4);
 
   function handleAddToCart() {
     addItem(product, quantity);
@@ -78,7 +132,7 @@ export default function ProductoPage({ params }) {
         <div className={styles.gallery}>
           <div className={styles['main-image']}>
             {product.imagen_url ? (
-              <img src={product.imagen_url} alt={product.nombre} />
+              <img src={product.imagen_url} alt={product.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
               <div className={styles['main-image-placeholder']}>🌸</div>
             )}
@@ -109,7 +163,9 @@ export default function ProductoPage({ params }) {
             )}
           </div>
 
-          <p className={styles['product-description']}>{product.descripcion}</p>
+          <p className={styles['product-description']}>
+            {product.descripcion || 'Una fragancia excepcional diseñada para cautivar. Formulada con las más finas esencias del mundo.'}
+          </p>
 
           {/* Selector de cantidad */}
           <div className={styles['quantity-section']}>
@@ -125,7 +181,7 @@ export default function ProductoPage({ params }) {
               <span className={styles['qty-value']}>{quantity}</span>
               <button
                 className={styles['qty-btn']}
-                onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                onClick={() => setQuantity(Math.min(product.stock || 99, quantity + 1))}
                 aria-label="Aumentar cantidad"
               >
                 +
@@ -156,7 +212,7 @@ export default function ProductoPage({ params }) {
             <span className={`${styles['stock-dot']} ${product.stock <= 5 ? styles.low : ''}`} />
             <span>
               {product.stock <= 5
-                ? `Solo ${product.stock} unidades disponibles`
+                ? `Solo ${product.stock || 0} unidades disponibles`
                 : 'Disponible en stock'}
             </span>
           </div>
