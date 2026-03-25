@@ -2,14 +2,14 @@ import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { supabase } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 
-// Inicializar cliente de MercadoPago
-const client = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN,
-  options: { timeout: 5000, idempotencyKey: 'abc' }
-});
-
 export async function POST(req) {
   try {
+    // Inicializar cliente dentro de la funcion para evitar errores en build
+    const client = new MercadoPagoConfig({
+      accessToken: process.env.MP_ACCESS_TOKEN,
+      options: { timeout: 5000 }
+    });
+
     const { items, customer, shippingCost, total } = await req.json();
 
     if (!items || items.length === 0) {
@@ -43,11 +43,11 @@ export async function POST(req) {
 
     const orderId = order ? order.id : `TEMP-${Date.now()}`;
 
-    // Insertar items del pedido si se creo el pedido (esto seria ideal con RPC o promesa map, pero lo hacemos simple aqui)
+    // Insertar items del pedido
     if (order) {
       const orderItems = items.map(item => ({
         pedido_id: order.id,
-        producto_id: String(item.id).length > 20 ? item.id : null, // Solo UUID validos si existe
+        producto_id: String(item.id).length > 20 ? item.id : null,
         nombre: item.nombre,
         cantidad: item.quantity,
         precio_unitario: item.precio_oferta || item.precio,
@@ -63,25 +63,22 @@ export async function POST(req) {
       title: item.nombre,
       quantity: item.quantity,
       unit_price: Number(item.precio_oferta || item.precio),
-      currency_id: 'ARS',
+      currency_id: 'MXN',
       picture_url: item.imagen_url || undefined,
     }));
 
-    // Si hay costo de envio, agregarlo como un item extra
     if (shippingCost > 0) {
       mpItems.push({
         id: 'envio',
         title: 'Costo de Envio',
         quantity: 1,
         unit_price: Number(shippingCost),
-        currency_id: 'ARS',
+        currency_id: 'MXN',
       });
     }
 
     // 3. Crear la preferencia en MercadoPago
     const preference = new Preference(client);
-    
-    // Configurar URLs de retorno y webhook
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
     const prefResult = await preference.create({
@@ -90,9 +87,7 @@ export async function POST(req) {
         payer: {
           name: customer.nombre,
           email: customer.email,
-          phone: {
-            number: customer.telefono
-          },
+          phone: { number: customer.telefono },
           address: {
             street_name: customer.direccion,
             zip_code: customer.codigoPostal
@@ -109,7 +104,7 @@ export async function POST(req) {
       }
     });
 
-    // 4. Actualizar el pedido en Supabase con el preference ID
+    // 4. Actualizar el pedido con el preference ID
     if (order) {
       await supabase
         .from('pedidos')
@@ -117,7 +112,6 @@ export async function POST(req) {
         .eq('id', order.id);
     }
 
-    // Devolver el init_point para redirigir
     return NextResponse.json({
       id: prefResult.id,
       init_point: prefResult.init_point,

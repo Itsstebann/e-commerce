@@ -2,31 +2,28 @@ import { MercadoPagoConfig, Payment } from 'mercadopago';
 import { supabase } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 
-const client = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN,
-});
-
 export async function POST(req) {
   try {
+    const client = new MercadoPagoConfig({
+      accessToken: process.env.MP_ACCESS_TOKEN,
+    });
+
     const url = new URL(req.url);
     const type = url.searchParams.get('type') || url.searchParams.get('topic');
     const dataId = url.searchParams.get('data.id') || url.searchParams.get('id');
 
     if (type === 'payment' && dataId) {
-      // Buscar la informacion del pago
       const payment = new Payment(client);
       const paymentInfo = await payment.get({ id: dataId });
 
       if (paymentInfo && paymentInfo.external_reference) {
         const orderId = paymentInfo.external_reference;
-        const status = paymentInfo.status; // 'approved', 'pending', 'rejected', etc.
+        const status = paymentInfo.status;
 
-        // Mapear el estado a nuestro sistema
         let nuevoEstado = 'pendiente';
         if (status === 'approved') nuevoEstado = 'pagado';
         else if (status === 'rejected') nuevoEstado = 'rechazado';
 
-        // Actualizar el pedido en Supabase
         const { error } = await supabase
           .from('pedidos')
           .update({
@@ -37,8 +34,6 @@ export async function POST(req) {
 
         if (error) {
           console.error('Error actualizando pedido desde webhook:', error);
-        } else {
-          console.log(`Pedido ${orderId} actualizado a estado: ${nuevoEstado}`);
         }
       }
     }
