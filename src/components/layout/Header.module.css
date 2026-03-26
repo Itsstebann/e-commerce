@@ -69,16 +69,14 @@
 }
 
 .header-logo {
-  font-family: var(--font-heading);
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  letter-spacing: 2px;
-  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+  transition: opacity var(--transition-fast);
 }
 
-.header-logo span {
-  color: var(--color-accent);
+.header-logo:hover {
+  opacity: 0.88;
 }
 
 .header-actions {
