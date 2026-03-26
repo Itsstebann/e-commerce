@@ -1,13 +1,13 @@
-// Nombre de la tienda (actualizar con el nombre real del cliente)
-export const STORE_NAME = 'Aurumea';
+// Nombre de la tienda
+export const STORE_NAME = 'AurumeAcol';
 export const STORE_DESCRIPTION = 'Fragancias exclusivas que definen tu esencia';
 
 // Moneda por defecto
-export const DEFAULT_CURRENCY = 'MXN';
+export const DEFAULT_CURRENCY = 'COP';
 
-// Numero de WhatsApp para contacto (actualizar con el real)
-export const WHATSAPP_NUMBER = '525500000000';
-export const WHATSAPP_MESSAGE = 'Hola, me interesa un perfume de su catalogo';
+// Numero de WhatsApp para contacto
+export const WHATSAPP_NUMBER = '573202848069';
+export const WHATSAPP_MESSAGE = 'Hola, me interesa un perfume de su catálogo en AurumeAcol';
 
 // Redes sociales
 export const SOCIAL_LINKS = {
@@ -18,8 +18,8 @@ export const SOCIAL_LINKS = {
 
 // Opciones de envio
 export const SHIPPING_OPTIONS = [
-  { id: 'standard', name: 'Envio Estandar', price: 99, days: '3-5 dias' },
-  { id: 'express', name: 'Envio Express', price: 199, days: '1-2 dias' },
+  { id: 'standard', name: 'Envío Estándar', price: 9900, days: '3-5 días' },
+  { id: 'express', name: 'Envío Express', price: 19900, days: '1-2 días' },
 ];
 
 // Estados de pedido
@@ -32,4 +32,4 @@ export const ORDER_STATUSES = {
 };
 
 // Barra de anuncio
-export const ANNOUNCEMENT_TEXT = 'ENVIO GRATIS en compras mayores a $999';
+export const ANNOUNCEMENT_TEXT = '✦ ENVÍO GRATIS en compras mayores a $99.900 COP ✦';
