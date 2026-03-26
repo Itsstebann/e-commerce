@@ -9,7 +9,6 @@ export default function AdminLayout({ children }) {
 
   // Verificacion tonta por ahora
   useEffect(() => {
-    // Si estamos en /admin/login no forzamos auth en el layout
     if (pathname === '/admin/login') {
       setIsAuthenticated(true);
       return;
@@ -17,7 +16,16 @@ export default function AdminLayout({ children }) {
 
     const token = localStorage.getItem('admin_token');
     if (token) {
-      setIsAuthenticated(true);
+      // El token tiene formato 'logged_in_TIMESTAMP' — verificar que no haya expirado (8 horas)
+      const timestamp = parseInt(token.replace('logged_in_', ''), 10);
+      const EIGHT_HOURS = 8 * 60 * 60 * 1000;
+      if (!isNaN(timestamp) && (Date.now() - timestamp) < EIGHT_HOURS) {
+        setIsAuthenticated(true);
+      } else {
+        // Sesion expirada o token invalido
+        localStorage.removeItem('admin_token');
+        window.location.href = '/admin/login';
+      }
     } else {
       window.location.href = '/admin/login';
     }
