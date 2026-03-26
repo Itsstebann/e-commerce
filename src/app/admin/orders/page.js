@@ -137,8 +137,8 @@ export default function AdminOrders() {
       </div>
 
       {/* Tabla */}
-      <div style={{ background: '#111', borderRadius: '10px', border: '1px solid #222', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+      <div style={{ background: '#111', borderRadius: '10px', border: '1px solid #222', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <table style={{ width: '100%', minWidth: '640px', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead style={{ background: '#161616' }}>
             <tr style={{ color: '#555', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               <th style={{ padding: '1rem 1.25rem', fontWeight: 600, borderBottom: '1px solid #222' }}>ID</th>
