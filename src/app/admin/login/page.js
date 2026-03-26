@@ -7,12 +7,12 @@ export default function AdminLogin() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    // Simplicidad para la demostracion. Por defecto usamos una clave maestra
-    if (password === 'admin123' || password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+    const correctPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'Itsstech1028';
+    if (password === correctPassword) {
       localStorage.setItem('admin_token', 'logged_in_' + Date.now());
       window.location.href = '/admin';
     } else {
-      setError('Contrasena incorrecta');
+      setError('Contraseña incorrecta');
     }
   }
 
@@ -63,9 +63,7 @@ export default function AdminLogin() {
           </button>
         </form>
         
-        <p style={{ color: '#666', fontSize: '0.85rem', marginTop: '2rem' }}>
-          Demo: Usa la contrasena <b>admin123</b> para ingresar.
-        </p>
+
       </div>
     </div>
   );
