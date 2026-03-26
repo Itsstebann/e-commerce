@@ -325,3 +325,138 @@ input, textarea, select {
     grid-template-columns: 1fr;
   }
 }
+
+/* ================================
+   CHECKOUT - Responsive Mobile
+   ================================ */
+.checkout-layout {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 3rem;
+  align-items: start;
+}
+
+.checkout-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 900px) {
+  .checkout-layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .checkout-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ================================
+   ADMIN - Responsive Mobile
+   ================================ */
+.admin-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  background: #111;
+  border-right: 1px solid #222;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+}
+
+.admin-main {
+  flex: 1;
+  padding: 3rem;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .admin-wrapper {
+    flex-direction: column;
+  }
+
+  .admin-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #222;
+    flex-direction: row;
+    flex-wrap: wrap;
+    overflow: hidden;
+  }
+
+  .admin-sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #222;
+  }
+
+  .admin-sidebar-nav {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    gap: 0.5rem;
+  }
+
+  .admin-nav-link {
+    white-space: nowrap;
+    padding: 0.6rem 1rem !important;
+    border-right: none !important;
+    border-bottom: 2px solid transparent;
+    border-radius: 6px;
+  }
+
+  .admin-sidebar-footer {
+    padding: 0.75rem 1rem;
+    width: 100%;
+    border-top: none;
+    border-left: 1px solid #222;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+  }
+
+  .admin-main {
+    padding: 1.5rem 1rem;
+  }
+}
+
+/* ================================
+   Catalog filters responsive
+   ================================ */
+.catalog-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+  .catalog-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Aumentar tap targets en móvil */
+@media (max-width: 768px) {
+  .btn {
+    min-height: 48px;
+  }
+
+  button {
+    min-height: 44px;
+  }
+}

@@ -90,7 +90,7 @@ export default function CheckoutPage() {
         <span>Checkout</span>
       </h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '3rem', alignItems: 'start' }}>
+      <div className="checkout-layout">
         {/* Formulario */}
         <form onSubmit={handleSubmit} id="checkout-form">
           <div style={{
@@ -104,7 +104,7 @@ export default function CheckoutPage() {
               Informacion de contacto
             </h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="checkout-form-grid">
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--color-text-secondary)' }}>
                   Nombre completo *
