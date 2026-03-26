@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
-import { ANNOUNCEMENT_TEXT } from '@/utils/constants';
+import { STORE_NAME, ANNOUNCEMENT_TEXT } from '@/utils/constants';
 import styles from './Header.module.css';
 
 export default function Header() {
@@ -29,14 +28,8 @@ export default function Header() {
 
           {/* Logo centro */}
           <Link href="/" className={styles['header-logo']}>
-            <Image
-              src="/logo.png"
-              alt="AurumeAcol Perfumería Virtual"
-              width={140}
-              height={52}
-              priority
-              style={{ objectFit: 'contain', filter: 'brightness(1.05)' }}
-            />
+            <span className={styles['logo-icon']}>✦</span>
+            <span className={styles['logo-text']}>{STORE_NAME}</span>
           </Link>
 
           {/* Acciones derecha */}

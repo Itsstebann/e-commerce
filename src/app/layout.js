@@ -7,8 +7,8 @@ export const metadata = {
   description: 'AurumeAcol - Tienda en linea de perfumes exclusivos. Encuentra la fragancia perfecta para cada ocasion con envio a todo Colombia.',
   keywords: 'aurumeacol, perfumes, fragancias, perfumeria, tienda online, perfumes originales, Colombia',
   icons: {
-    icon: '/logo.png',
-    apple: '/logo.png',
+    icon: '/favicon.png',
+    apple: '/favicon.png',
   },
 };
 
