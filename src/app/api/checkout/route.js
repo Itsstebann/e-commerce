@@ -4,6 +4,15 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req) {
   try {
+    // Validar que las credenciales de MercadoPago estén configuradas
+    if (!process.env.MP_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN === 'tu_access_token') {
+      console.error('[Checkout] MP_ACCESS_TOKEN no está configurado en .env.local');
+      return NextResponse.json(
+        { error: 'Configuración de pagos incompleta. Contacta al administrador.' },
+        { status: 500 }
+      );
+    }
+
     // Inicializar cliente dentro de la funcion para evitar errores en build
     const client = new MercadoPagoConfig({
       accessToken: process.env.MP_ACCESS_TOKEN,
@@ -112,16 +121,55 @@ export async function POST(req) {
         .eq('id', order.id);
     }
 
-    return NextResponse.json({
+    // El SDK v2 devuelve sandbox_init_point en modo test e init_point en produccion
+    const redirectUrl = prefResult.init_point || prefResult.sandbox_init_point;
+
+    if (!redirectUrl) {
+      console.error('[Checkout] MercadoPago no devolvio init_point:', JSON.stringify(prefResult));
+      return NextResponse.json(
+        {
+          error: 'MercadoPago no devolvio una URL de pago',
+          detail: `Respuesta recibida: ${JSON.stringify(prefResult)}`,
+          mpStatus: 200,
+        },
+        { status: 500 }
+      );
+    }
+
+    console.log('[Checkout] Preferencia creada:', {
       id: prefResult.id,
       init_point: prefResult.init_point,
+      sandbox_init_point: prefResult.sandbox_init_point,
+      redirectUrl,
+    });
+
+    return NextResponse.json({
+      id: prefResult.id,
+      init_point: redirectUrl,
       orderId: orderId
     });
 
   } catch (error) {
-    console.error('Error al generar preferencia MercadoPago:', error);
+    // Extraer el mensaje de error específico de MercadoPago
+    const mpMessage = error?.cause?.[0]?.description
+      || error?.message
+      || 'Error desconocido';
+
+    const mpStatus = error?.status || 500;
+
+    console.error('[Checkout] Error MercadoPago:', {
+      status: mpStatus,
+      message: mpMessage,
+      cause: JSON.stringify(error?.cause),
+      raw: error,
+    });
+
     return NextResponse.json(
-      { error: 'Error interno al procesar el pago' },
+      {
+        error: 'Error al procesar el pago',
+        detail: mpMessage,
+        mpStatus,
+      },
       { status: 500 }
     );
   }

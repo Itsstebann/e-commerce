@@ -46,7 +46,9 @@ export default function CheckoutPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Error al procesar el pago');
+        // Mostrar el detalle exacto de MercadoPago para facilitar el diagnóstico
+        const detail = data.detail ? `\n\nDetalle: ${data.detail}` : '';
+        throw new Error((data.error || 'Error al procesar el pago') + detail);
       }
 
       // Redirigir a MercadoPago
@@ -54,8 +56,8 @@ export default function CheckoutPage() {
         window.location.href = data.init_point;
       }
     } catch (error) {
-      console.error('Checkout error:', error);
-      alert('Hubo un error al iniciar el pago. Por favor intenta nuevamente.');
+      console.error('[Checkout] Error:', error.message);
+      alert(`Hubo un error al iniciar el pago.\n\n${error.message}`);
       setLoading(false);
     }
   }
