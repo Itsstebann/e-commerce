@@ -26,11 +26,8 @@ export default function Header() {
             <Link href="/catalogo">Catalogo</Link>
           </nav>
 
-          {/* Logo centro */}
-          <Link href="/" className={styles['header-logo']}>
-            <span className={styles['logo-icon']}>✦</span>
-            <span className={styles['logo-text']}>{STORE_NAME}</span>
-          </Link>
+          {/* Logo centro - link a home */}
+          <Link href="/" aria-label="Ir al inicio" style={{ display: 'flex' }} />
 
           {/* Acciones derecha */}
           <div className={styles['header-actions']}>

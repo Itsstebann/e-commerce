@@ -8,6 +8,8 @@ const EMPTY_FORM = {
   stock: '', categoria_nombre: '', imagen_url: '', destacado: false,
 };
 
+const BUCKET = 'product-images';
+
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,6 +18,9 @@ export default function AdminProducts() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [search, setSearch] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   async function loadProducts() {
     try {
@@ -37,6 +42,8 @@ export default function AdminProducts() {
   function openCreate() {
     setEditingProduct(null);
     setForm(EMPTY_FORM);
+    setImageFile(null);
+    setImagePreview(null);
     setModalOpen(true);
   }
 
@@ -52,6 +59,8 @@ export default function AdminProducts() {
       imagen_url: product.imagen_url || '',
       destacado: product.destacado || false,
     });
+    setImageFile(null);
+    setImagePreview(product.imagen_url || null);
     setModalOpen(true);
   }
 
@@ -59,11 +68,36 @@ export default function AdminProducts() {
     setModalOpen(false);
     setEditingProduct(null);
     setForm(EMPTY_FORM);
+    setImageFile(null);
+    setImagePreview(null);
   }
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
     setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  }
+
+  function handleImageChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
+  async function uploadImage(file) {
+    setUploadingImage(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage
+        .from(BUCKET)
+        .upload(fileName, file, { upsert: true, contentType: file.type });
+      if (error) throw error;
+      const { data } = supabase.storage.from(BUCKET).getPublicUrl(fileName);
+      return data.publicUrl;
+    } finally {
+      setUploadingImage(false);
+    }
   }
 
   async function handleSave(e) {
@@ -74,6 +108,13 @@ export default function AdminProducts() {
     }
     setSaving(true);
     try {
+      let imagenUrl = form.imagen_url;
+
+      // Subir imagen si se seleccionó un archivo nuevo
+      if (imageFile) {
+        imagenUrl = await uploadImage(imageFile);
+      }
+
       const payload = {
         nombre: form.nombre,
         descripcion: form.descripcion,
@@ -81,7 +122,7 @@ export default function AdminProducts() {
         precio_oferta: form.precio_oferta ? Number(form.precio_oferta) : null,
         stock: Number(form.stock),
         categoria_nombre: form.categoria_nombre,
-        imagen_url: form.imagen_url || null,
+        imagen_url: imagenUrl || null,
         destacado: form.destacado,
       };
 
@@ -256,7 +297,44 @@ export default function AdminProducts() {
                 <Field label="Stock *" name="stock" value={form.stock} onChange={handleChange} type="number" required />
                 <Field label="Precio (COP) *" name="precio" value={form.precio} onChange={handleChange} type="number" required />
                 <Field label="Precio Oferta (COP)" name="precio_oferta" value={form.precio_oferta} onChange={handleChange} type="number" placeholder="Opcional" />
-                <Field label="URL de Imagen" name="imagen_url" value={form.imagen_url} onChange={handleChange} placeholder="https://..." span={2} />
+              </div>
+
+              {/* Imagen del producto - file upload */}
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '0.78rem', color: '#555', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  Imagen del producto
+                </label>
+                <label htmlFor="product-image-input" style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  gap: '0.5rem', padding: '1.25rem', borderRadius: '8px', cursor: 'pointer',
+                  border: '2px dashed #2a2a2a', background: '#1a1a1a', transition: 'border-color 0.2s',
+                  minHeight: imagePreview ? 'auto' : '100px',
+                }}
+                  onMouseOver={e => e.currentTarget.style.borderColor = '#C9A96E'}
+                  onMouseOut={e => e.currentTarget.style.borderColor = '#2a2a2a'}>
+                  {imagePreview ? (
+                    <img src={imagePreview} alt="Preview" style={{ maxHeight: 160, maxWidth: '100%', borderRadius: '6px', objectFit: 'contain' }} />
+                  ) : (
+                    <>
+                      <span style={{ fontSize: '1.75rem' }}>📷</span>
+                      <span style={{ fontSize: '0.85rem', color: '#555' }}>Haz clic para seleccionar una imagen</span>
+                      <span style={{ fontSize: '0.75rem', color: '#444' }}>JPG, PNG, WEBP — máx. 5MB</span>
+                    </>
+                  )}
+                </label>
+                <input
+                  id="product-image-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  style={{ display: 'none' }}
+                />
+                {imagePreview && (
+                  <button type="button" onClick={() => { setImageFile(null); setImagePreview(null); setForm(p => ({ ...p, imagen_url: '' })); }}
+                    style={{ marginTop: '0.5rem', background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '0.8rem' }}>
+                    ✕ Quitar imagen
+                  </button>
+                )}
               </div>
 
               {/* Descripción */}
@@ -285,9 +363,9 @@ export default function AdminProducts() {
                   style={{ background: 'transparent', border: '1px solid #333', color: '#888', padding: '0.7rem 1.5rem', borderRadius: '6px', cursor: 'pointer' }}>
                   Cancelar
                 </button>
-                <button type="submit" disabled={saving}
-                  style={{ background: '#C9A96E', color: '#000', border: 'none', padding: '0.7rem 1.75rem', borderRadius: '6px', cursor: saving ? 'not-allowed' : 'pointer', fontWeight: 700, opacity: saving ? 0.7 : 1 }}>
-                  {saving ? 'Guardando...' : (editingProduct ? 'Guardar cambios' : 'Crear producto')}
+                <button type="submit" disabled={saving || uploadingImage}
+                  style={{ background: '#C9A96E', color: '#000', border: 'none', padding: '0.7rem 1.75rem', borderRadius: '6px', cursor: (saving || uploadingImage) ? 'not-allowed' : 'pointer', fontWeight: 700, opacity: (saving || uploadingImage) ? 0.7 : 1 }}>
+                  {uploadingImage ? 'Subiendo imagen...' : saving ? 'Guardando...' : (editingProduct ? 'Guardar cambios' : 'Crear producto')}
                 </button>
               </div>
             </form>
