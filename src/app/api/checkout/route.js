@@ -72,7 +72,7 @@ export async function POST(req) {
       title: item.nombre,
       quantity: item.quantity,
       unit_price: Number(item.precio_oferta || item.precio),
-      currency_id: 'MXN',
+      currency_id: 'COP',
       picture_url: item.imagen_url || undefined,
     }));
 
@@ -82,7 +82,7 @@ export async function POST(req) {
         title: 'Costo de Envio',
         quantity: 1,
         unit_price: Number(shippingCost),
-        currency_id: 'MXN',
+        currency_id: 'COP',
       });
     }
 

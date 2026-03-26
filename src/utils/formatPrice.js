@@ -4,12 +4,12 @@
  * @param {string} currency - Codigo de moneda (MXN, COP, etc.)
  * @returns {string} Precio formateado
  */
-export function formatPrice(price, currency = 'MXN') {
-  return new Intl.NumberFormat('es-MX', {
+export function formatPrice(price, currency = 'COP') {
+  return new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: currency,
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 0,
   }).format(price);
 }
 
