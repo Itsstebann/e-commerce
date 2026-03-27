@@ -75,6 +75,16 @@ export default function ProductoPage({ params }) {
     loadProduct();
   }, [productId]);
 
+  const [activeImage, setActiveImage] = useState(null);
+
+  useEffect(() => {
+    if (product) {
+      setActiveImage(
+        (product.imagenes && product.imagenes.length > 0) ? product.imagenes[0] : (product.imagen_url || null)
+      );
+    }
+  }, [product]);
+
   if (loading) {
     return (
       <div className={styles['product-page']} style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -101,6 +111,8 @@ export default function ProductoPage({ params }) {
 
   const hasDiscount = product.precio_oferta && product.precio_oferta < product.precio;
   const discount = hasDiscount ? calculateDiscount(product.precio, product.precio_oferta) : 0;
+  
+  const allImages = (product.imagenes && product.imagenes.length > 0) ? product.imagenes : (product.imagen_url ? [product.imagen_url] : []);
 
   function handleAddToCart() {
     addItem(product, quantity);
@@ -131,19 +143,26 @@ export default function ProductoPage({ params }) {
         {/* Galeria de imagenes */}
         <div className={styles.gallery}>
           <div className={styles['main-image']}>
-            {product.imagen_url ? (
-              <img src={product.imagen_url} alt={product.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            {activeImage ? (
+              <img src={activeImage} alt={product.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
               <div className={styles['main-image-placeholder']}>🌸</div>
             )}
           </div>
-          <div className={styles.thumbnails}>
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className={`${styles.thumbnail} ${i === 1 ? styles.active : ''}`}>
-                🌸
-              </div>
-            ))}
-          </div>
+          {allImages.length > 1 && (
+            <div className={styles.thumbnails}>
+              {allImages.map((img, i) => (
+                <div 
+                  key={i} 
+                  className={`${styles.thumbnail} ${activeImage === img ? styles.active : ''}`}
+                  onClick={() => setActiveImage(img)}
+                  style={{ cursor: 'pointer', overflow: 'hidden' }}
+                >
+                  <img src={img} alt={`Miniatura ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Detalles del producto */}

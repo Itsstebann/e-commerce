@@ -18,8 +18,8 @@ export default function AdminProducts() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [search, setSearch] = useState('');
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [uploadingImage, setUploadingImage] = useState(false);
 
   async function loadProducts() {
@@ -42,8 +42,8 @@ export default function AdminProducts() {
   function openCreate() {
     setEditingProduct(null);
     setForm(EMPTY_FORM);
-    setImageFile(null);
-    setImagePreview(null);
+    setImageFiles([]);
+    setImagePreviews([]);
     setModalOpen(true);
   }
 
@@ -59,8 +59,8 @@ export default function AdminProducts() {
       imagen_url: product.imagen_url || '',
       destacado: product.destacado || false,
     });
-    setImageFile(null);
-    setImagePreview(product.imagen_url || null);
+    setImageFiles([]);
+    setImagePreviews(product.imagenes && product.imagenes.length > 0 ? product.imagenes : (product.imagen_url ? [product.imagen_url] : []));
     setModalOpen(true);
   }
 
@@ -68,8 +68,8 @@ export default function AdminProducts() {
     setModalOpen(false);
     setEditingProduct(null);
     setForm(EMPTY_FORM);
-    setImageFile(null);
-    setImagePreview(null);
+    setImageFiles([]);
+    setImagePreviews([]);
   }
 
   function handleChange(e) {
@@ -78,23 +78,27 @@ export default function AdminProducts() {
   }
 
   function handleImageChange(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    setImageFiles(files);
+    setImagePreviews(files.map(f => URL.createObjectURL(f)));
   }
 
-  async function uploadImage(file) {
+  async function uploadImages(files) {
     setUploadingImage(true);
     try {
-      const ext = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error } = await supabase.storage
-        .from(BUCKET)
-        .upload(fileName, file, { upsert: true, contentType: file.type });
-      if (error) throw error;
-      const { data } = supabase.storage.from(BUCKET).getPublicUrl(fileName);
-      return data.publicUrl;
+      const urls = [];
+      for (const file of files) {
+        const ext = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error } = await supabase.storage
+          .from(BUCKET)
+          .upload(fileName, file, { upsert: true, contentType: file.type });
+        if (error) throw error;
+        const { data } = supabase.storage.from(BUCKET).getPublicUrl(fileName);
+        urls.push(data.publicUrl);
+      }
+      return urls;
     } finally {
       setUploadingImage(false);
     }
@@ -108,12 +112,15 @@ export default function AdminProducts() {
     }
     setSaving(true);
     try {
-      let imagenUrl = form.imagen_url;
-
-      // Subir imagen si se seleccionó un archivo nuevo
-      if (imageFile) {
-        imagenUrl = await uploadImage(imageFile);
+      let finalUrls = imagePreviews.filter(p => !p.startsWith('blob:')); // kept existing images if any
+      
+      // Subir imágenes si se seleccionaron archivos nuevos
+      if (imageFiles.length > 0) {
+        const uploadedUrls = await uploadImages(imageFiles);
+        finalUrls = uploadedUrls;
       }
+      
+      let imagenUrl = finalUrls.length > 0 ? finalUrls[0] : (form.imagen_url || null);
 
       let generatedSlug = 'unisex';
       const catLower = (form.categoria_nombre || '').toLowerCase();
@@ -128,7 +135,8 @@ export default function AdminProducts() {
         precio_oferta: form.precio_oferta ? Number(form.precio_oferta) : null,
         stock: Number(form.stock),
         categoria_nombre: form.categoria_nombre,
-        imagen_url: imagenUrl || null,
+        imagen_url: imagenUrl,
+        imagenes: finalUrls,
         destacado: form.destacado,
         slug: generatedSlug,
       };
@@ -309,37 +317,42 @@ export default function AdminProducts() {
               {/* Imagen del producto - file upload */}
               <div style={{ marginBottom: '1.25rem' }}>
                 <label style={{ display: 'block', fontSize: '0.78rem', color: '#555', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  Imagen del producto
+                  Galería de imágenes
                 </label>
                 <label htmlFor="product-image-input" style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   gap: '0.5rem', padding: '1.25rem', borderRadius: '8px', cursor: 'pointer',
                   border: '2px dashed #2a2a2a', background: '#1a1a1a', transition: 'border-color 0.2s',
-                  minHeight: imagePreview ? 'auto' : '100px',
+                  minHeight: imagePreviews.length > 0 ? 'auto' : '100px',
                 }}
                   onMouseOver={e => e.currentTarget.style.borderColor = '#C9A96E'}
                   onMouseOut={e => e.currentTarget.style.borderColor = '#2a2a2a'}>
-                  {imagePreview ? (
-                    <img src={imagePreview} alt="Preview" style={{ maxHeight: 160, maxWidth: '100%', borderRadius: '6px', objectFit: 'contain' }} />
+                  {imagePreviews.length > 0 ? (
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      {imagePreviews.map((preview, idx) => (
+                        <img key={idx} src={preview} alt={`Preview ${idx + 1}`} style={{ maxHeight: 100, borderRadius: '6px', objectFit: 'contain' }} />
+                      ))}
+                    </div>
                   ) : (
                     <>
                       <span style={{ fontSize: '1.75rem' }}>📷</span>
-                      <span style={{ fontSize: '0.85rem', color: '#555' }}>Haz clic para seleccionar una imagen</span>
-                      <span style={{ fontSize: '0.75rem', color: '#444' }}>JPG, PNG, WEBP — máx. 5MB</span>
+                      <span style={{ fontSize: '0.85rem', color: '#555' }}>Haz clic para seleccionar múltiples imágenes (Mín. 2)</span>
+                      <span style={{ fontSize: '0.75rem', color: '#444' }}>JPG, PNG, WEBP</span>
                     </>
                   )}
                 </label>
                 <input
                   id="product-image-input"
                   type="file"
+                  multiple
                   accept="image/*"
                   onChange={handleImageChange}
                   style={{ display: 'none' }}
                 />
-                {imagePreview && (
-                  <button type="button" onClick={() => { setImageFile(null); setImagePreview(null); setForm(p => ({ ...p, imagen_url: '' })); }}
+                {imagePreviews.length > 0 && (
+                  <button type="button" onClick={() => { setImageFiles([]); setImagePreviews([]); setForm(p => ({ ...p, imagen_url: '' })); }}
                     style={{ marginTop: '0.5rem', background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '0.8rem' }}>
-                    ✕ Quitar imagen
+                    ✕ Quitar todas las imágenes
                   </button>
                 )}
               </div>
