@@ -115,6 +115,12 @@ export default function AdminProducts() {
         imagenUrl = await uploadImage(imageFile);
       }
 
+      let generatedSlug = 'unisex';
+      const catLower = (form.categoria_nombre || '').toLowerCase();
+      if (catLower.includes('mujer') || catLower.includes('ella')) generatedSlug = 'mujer';
+      else if (catLower.includes('hombre') || catLower.includes(' el')) generatedSlug = 'hombre';
+      else if (catLower) generatedSlug = catLower.trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
       const payload = {
         nombre: form.nombre,
         descripcion: form.descripcion,
@@ -124,6 +130,7 @@ export default function AdminProducts() {
         categoria_nombre: form.categoria_nombre,
         imagen_url: imagenUrl || null,
         destacado: form.destacado,
+        slug: generatedSlug,
       };
 
       if (editingProduct) {
