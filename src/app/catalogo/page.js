@@ -43,32 +43,13 @@ function CatalogoContent() {
           .order('creado_en', { ascending: false });
         
         if (error) throw error;
-        
-        // Use default fallback if no data
-        if (!data || data.length === 0) {
-          // Fallback static data if DB table has no rows or is missing
-          setProducts([
-            { id: '1', nombre: 'Eau de Parfum Noir', precio: 1299, precio_oferta: 999, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: true, nuevo: true, stock: 15 },
-            { id: '2', nombre: 'Rose Absolue Intense', precio: 1599, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para Ella', slug: 'mujer', destacado: true, nuevo: false, stock: 8 },
-            { id: '3', nombre: 'Oud & Santal Premium', precio: 1899, precio_oferta: 1499, imagen_url: null, categoria_nombre: 'Unisex', slug: 'unisex', destacado: true, nuevo: true, stock: 5 },
-            { id: '4', nombre: 'Fresh Citrus Breeze', precio: 899, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: true, nuevo: false, stock: 20 },
-          ]);
-        } else {
+        if (!error && data) {
           setProducts(data);
         }
       } catch (err) {
         console.error('Error fetching products:', err);
         // Fallback en caso de error (tabla no existe, etc.)
-        setProducts([
-          { id: '1', nombre: 'Eau de Parfum Noir', precio: 1299, precio_oferta: 999, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: true, nuevo: true, stock: 15 },
-          { id: '2', nombre: 'Rose Absolue Intense', precio: 1599, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para Ella', slug: 'mujer', destacado: true, nuevo: false, stock: 8 },
-          { id: '3', nombre: 'Oud & Santal Premium', precio: 1899, precio_oferta: 1499, imagen_url: null, categoria_nombre: 'Unisex', slug: 'unisex', destacado: true, nuevo: true, stock: 5 },
-          { id: '4', nombre: 'Fresh Citrus Breeze', precio: 899, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: true, nuevo: false, stock: 20 },
-          { id: '5', nombre: 'Jasmine & Vanilla Dream', precio: 1199, precio_oferta: 899, imagen_url: null, categoria_nombre: 'Para Ella', slug: 'mujer', destacado: true, nuevo: false, stock: 12 },
-          { id: '6', nombre: 'Amber Wood Collection', precio: 2199, precio_oferta: null, imagen_url: null, categoria_nombre: 'Unisex', slug: 'unisex', destacado: true, nuevo: true, stock: 3 },
-          { id: '7', nombre: 'Ocean Mist Sport', precio: 799, precio_oferta: 599, imagen_url: null, categoria_nombre: 'Para El', slug: 'hombre', destacado: true, nuevo: false, stock: 25 },
-          { id: '8', nombre: 'Peony & Blush Suede', precio: 1399, precio_oferta: null, imagen_url: null, categoria_nombre: 'Para Ella', slug: 'mujer', destacado: true, nuevo: false, stock: 10 },
-        ]);
+        setProducts([]);
       } finally {
         setLoading(false);
       }

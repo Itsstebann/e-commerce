@@ -29,98 +29,33 @@ const DEMO_COLLECTIONS = [
   },
 ];
 
-const DEMO_PRODUCTS = [
-  {
-    id: '1',
-    nombre: 'Eau de Parfum Noir',
-    precio: 1299,
-    precio_oferta: 999,
-    imagen_url: null,
-    categoria_nombre: 'Para El',
-    destacado: true,
-    nuevo: true,
-    stock: 15,
-  },
-  {
-    id: '2',
-    nombre: 'Rose Absolue Intense',
-    precio: 1599,
-    precio_oferta: null,
-    imagen_url: null,
-    categoria_nombre: 'Para Ella',
-    destacado: true,
-    nuevo: false,
-    stock: 8,
-  },
-  {
-    id: '3',
-    nombre: 'Oud & Santal Premium',
-    precio: 1899,
-    precio_oferta: 1499,
-    imagen_url: null,
-    categoria_nombre: 'Unisex',
-    destacado: true,
-    nuevo: true,
-    stock: 5,
-  },
-  {
-    id: '4',
-    nombre: 'Fresh Citrus Breeze',
-    precio: 899,
-    precio_oferta: null,
-    imagen_url: null,
-    categoria_nombre: 'Para El',
-    destacado: true,
-    nuevo: false,
-    stock: 20,
-  },
-  {
-    id: '5',
-    nombre: 'Jasmine & Vanilla Dream',
-    precio: 1199,
-    precio_oferta: 899,
-    imagen_url: null,
-    categoria_nombre: 'Para Ella',
-    destacado: true,
-    nuevo: false,
-    stock: 12,
-  },
-  {
-    id: '6',
-    nombre: 'Amber Wood Collection',
-    precio: 2199,
-    precio_oferta: null,
-    imagen_url: null,
-    categoria_nombre: 'Unisex',
-    destacado: true,
-    nuevo: true,
-    stock: 3,
-  },
-  {
-    id: '7',
-    nombre: 'Ocean Mist Sport',
-    precio: 799,
-    precio_oferta: 599,
-    imagen_url: null,
-    categoria_nombre: 'Para El',
-    destacado: true,
-    nuevo: false,
-    stock: 25,
-  },
-  {
-    id: '8',
-    nombre: 'Peony & Blush Suede',
-    precio: 1399,
-    precio_oferta: null,
-    imagen_url: null,
-    categoria_nombre: 'Para Ella',
-    destacado: true,
-    nuevo: false,
-    stock: 10,
-  },
-];
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export default function HomePage() {
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadFeatured() {
+      try {
+        const { data, error } = await supabase
+          .from('productos')
+          .select('*')
+          .eq('destacado', true)
+          .order('creado_en', { ascending: false })
+          .limit(8);
+        if (!error && data) {
+          setFeaturedProducts(data);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadFeatured();
+  }, []);
   return (
     <>
       {/* Hero Section */}
@@ -192,9 +127,17 @@ export default function HomePage() {
         </h2>
         <div className={styles['featured-section']}>
           <div className="product-grid">
-            {DEMO_PRODUCTS.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {loading ? (
+              <div style={{ padding: '2rem', textAlign: 'center', width: '100%' }}>Cargando productos destacados...</div>
+            ) : featuredProducts.length > 0 ? (
+              featuredProducts.map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))
+            ) : (
+              <div style={{ padding: '2rem', textAlign: 'center', width: '100%', color: '#888' }}>
+                Aún no hay productos destacados.
+              </div>
+            )}
           </div>
         </div>
       </section>
