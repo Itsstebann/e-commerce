@@ -56,7 +56,6 @@ export default function Footer() {
             <li><Link href="/sobre-nosotros">Sobre Nosotros</Link></li>
             <li><Link href="/politica-envios">Envios</Link></li>
             <li><Link href="/politica-devoluciones">Devoluciones</Link></li>
-            <li><Link href="/contacto">Contacto</Link></li>
           </ul>
         </div>
 
