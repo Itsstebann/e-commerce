@@ -57,7 +57,7 @@ export default function CheckoutSuccess() {
         <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', marginBottom: '2rem' }}>
           ¿Tienes dudas sobre tu pedido?{' '}
           <a
-            href={`https://wa.me/573202848069?text=${encodeURIComponent('Hola, quiero consultar el estado de mi pedido en AurumeAcol')}`}
+            href={`https://wa.me/573202848069?text=${encodeURIComponent('Hola, quiero consultar el estado de mi pedido en AurumeaCol')}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#25D366', fontWeight: 600 }}

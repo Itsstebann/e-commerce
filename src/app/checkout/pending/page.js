@@ -56,7 +56,7 @@ export default function CheckoutPending() {
         <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', marginBottom: '2rem' }}>
           ¿Tienes dudas?{' '}
           <a
-            href={`https://wa.me/573202848069?text=${encodeURIComponent('Hola, realicé un pago en AurumeAcol y está pendiente de confirmación')}`}
+            href={`https://wa.me/573202848069?text=${encodeURIComponent('Hola, realicé un pago en AurumeaCol y está pendiente de confirmación')}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#25D366', fontWeight: 600 }}

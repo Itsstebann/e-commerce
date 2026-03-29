@@ -1,5 +1,5 @@
 // Nombre de la tienda
-export const STORE_NAME = 'AurumeAcol';
+export const STORE_NAME = 'AurumeaCol';
 export const STORE_DESCRIPTION = 'Fragancias exclusivas que definen tu esencia';
 
 // Moneda por defecto
@@ -7,7 +7,7 @@ export const DEFAULT_CURRENCY = 'COP';
 
 // Numero de WhatsApp para contacto
 export const WHATSAPP_NUMBER = '573202848069';
-export const WHATSAPP_MESSAGE = 'Hola, me interesa un perfume de su catálogo en AurumeAcol';
+export const WHATSAPP_MESSAGE = 'Hola, me interesa un perfume de su catálogo en AurumeaCol';
 
 // Redes sociales
 export const SOCIAL_LINKS = {

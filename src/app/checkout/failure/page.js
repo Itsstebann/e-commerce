@@ -38,7 +38,7 @@ export default function CheckoutFailure() {
         <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', marginBottom: '2rem' }}>
           ¿Necesitas ayuda?{' '}
           <a
-            href={`https://wa.me/573202848069?text=${encodeURIComponent('Hola, tuve un problema al pagar en AurumeAcol y necesito ayuda')}`}
+            href={`https://wa.me/573202848069?text=${encodeURIComponent('Hola, tuve un problema al pagar en AurumeaCol y necesito ayuda')}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#25D366', fontWeight: 600 }}
